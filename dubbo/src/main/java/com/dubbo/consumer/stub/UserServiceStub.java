@@ -4,6 +4,7 @@ import com.dubbo.service.UserService;
 
 /**
  * 消费者端本地存根，
+ * @author lee
  */
 public class UserServiceStub implements UserService {
 

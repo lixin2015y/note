@@ -10,7 +10,7 @@ public class Consumer {
 
         ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("consumer.xml");
         UserService userService = context.getBean(UserService.class);
-        userService.sayHello("li xin ");
+        System.out.println(userService.sayHello(null));
     }
 
 }
