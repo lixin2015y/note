@@ -304,6 +304,12 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
 第一步，前置工作，检查参数
 
++ 检测 <dubbo:service> 标签的 interface 属性合法性，不合法则抛出异常
++ 检测 ProviderConfig、ApplicationConfig 等核心配置类对象是否为空，若为空，则尝试从其他配置类对象中获取相应的实例。
++ 检测并处理泛化服务和普通服务类
++ 检测本地存根配置，并进行相应的处理
++ 对 ApplicationConfig、RegistryConfig 等配置类进行检测，为空则尝试创建，若无法创建则抛出异常
+
 第二步，导出服务，导出服务到远程，导出服务到本地
 
 + ServiceBean对象实现了InitializingBean和ApplicationListener方法，在对象初始化完成后，和容器刷新后都会调用导出方法，
