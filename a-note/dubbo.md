@@ -302,6 +302,41 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
 
 
+第一步，前置工作，检查参数
+
+第二步，导出服务，导出服务到远程，导出服务到本地
+
++ ServiceBean对象实现了InitializingBean和ApplicationListener方法，在对象初始化完成后，和容器刷新后都会调用导出方法，
+
+  容器启动完成后会发布刷新事件
+
+  <img src="C:\Users\lee\AppData\Roaming\Typora\typora-user-images\image-20210923084921239.png" alt="image-20210923084921239" style="zoom:50%;" />
+
+
+
++ ```xml
+  <dubbo:provider export="false" />
+  <!--->这个方法标注了该服务是否需要导出
+  ```
+
++ 
+
++ 
+
++ 
+
+
+
+第三步，向注册中心注册服务
+
+
+
+
+
+
+
+
+
 ##### 2.1.2.4 服务引用
 
 ##### 2.1.2.5 服务调用
