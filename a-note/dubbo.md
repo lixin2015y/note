@@ -323,16 +323,43 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
   <!--->这个方法标注了该服务是否需要导出
   ```
 
-+ 遍历所有协议Protocol，在每种协议中循环导出服务
++ 导出服务
 
   + ```java
-    List<URL> registryURLs = loadRegistries(true); // 加载注册中心链接
+    // 加载注册中心链接
+    List<URL> registryURLs = loadRegistries(true); 
+    
+    // 循环导出每个Protocol的每个配置中心
+    private void doExportUrls() {
+            List<URL> registryURLs = loadRegistries(true);
+            for (ProtocolConfig protocolConfig : protocols) {
+                doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+            }
+    }
+    // 对每个协议进行导出
+    void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
     
     ```
+    
+  + 加载配置中心链接
 
-+ 
+  ```java
+  // 检查是是否有注册中心配置
+  checkRegistry();
+  
+  // 返回一个List<URL>对象，URL对象中包含了，ip、端口等信息
+  1、检测是否存在注册中心配置类，不存在则抛出异常
+  2、构建参数映射集合，也就是 map
+  3、构建注册中心链接列表
+  4、遍历链接列表，并根据条件决定是否将其添加到 registryList 中
+     判断条件
+      // (服务提供者 && register = true 或 null) 
+      //    || (非服务提供者 && subscribe = true 或 null)
+  
+  
+  ```
 
-+ 
++ 加载完服务和方法，进行真正的导出
 
 
 
