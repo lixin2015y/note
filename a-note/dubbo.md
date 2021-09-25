@@ -323,7 +323,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
   <!--->这个方法标注了该服务是否需要导出
   ```
 
-+ 导出服务
++ 创建Invoker对象
 
   + ```java
     // 加载注册中心链接
@@ -360,6 +360,56 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
   ```
 
 + 加载完服务和方法，进行真正的导出
+
+  + 从URL中拿到scope，如果不是remote进行本地导出，如果不是local进行远程导出
+
+  + 导出到本地
+
+    + 导出之前需要先创建 Invoker,它代表一个可执行体，可向它发起 invoke 调用，它有可能是一个本地的实现，也可能是一个远程的实现，也可能一个集群实现。
+    + 1、调用Wrapper.getWrapper方法，默认使用dubbo自己封装的ClassGenerator创建一个Wrapper对象
+
+    ```java
+    public <T> Invoker<T> getInvoker(T proxy, Class<T> type, URL url) {
+    	// 为目标类创建 Wrapper
+        final Wrapper wrapper = Wrapper.getWrapper(proxy.getClass().getName().indexOf('$') < 0 ? proxy.getClass() : type);
+        // 创建匿名 Invoker 类对象，并实现 doInvoke 方法。
+        return new AbstractProxyInvoker<T>(proxy, type, url) {
+            @Override
+            protected Object doInvoke(T proxy, String methodName,
+                                      Class<?>[] parameterTypes,
+                                      Object[] arguments) throws Throwable {
+    			// 调用 Wrapper 的 invokeMethod 方法，invokeMethod 最终会调用目标方法
+                return wrapper.invokeMethod(proxy, methodName, parameterTypes, arguments);
+            }
+        };
+    }
+    
+    ```
+
+    + 创建Wrapper对象其实就是使永stirngBuilder来append对应的代码
+
+      <img src="C:\Users\lee\AppData\Roaming\Typora\typora-user-images\image-20210925094836298.png" alt="image-20210925094836298" style="zoom:50%;" />
+
+  + 调用protocol.export方法来进行导出，使用InjvmExporter进行导出
+
+    + ```java
+      public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+          // 创建 InjvmExporter
+          return new InjvmExporter<T>(invoker, invoker.getUrl().getServiceKey(), exporterMap);
+      }
+      ```
+
+  + 导出到远端
+
+    + 导出服务
+      + 不同协议有不同导出协议导出实现，默认是DubboProtocol 
+      + 创建通道
+    + 向注册中心注册服务
+    + 向注册中心进行订阅 override 数据
+    + 创建并返回 DestroyableExporter
+    + 
+
+  + 
 
 
 
