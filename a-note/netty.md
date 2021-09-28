@@ -14,7 +14,7 @@
 
   一个线程对应一个连接，客户端一个请求就需要一个线程进行处理，当连接不用的时候会造成不必要线程开销
 
-  <img src="C:\Users\lee\AppData\Roaming\Typora\typora-user-images\image-20210928084221934.png" alt="image-20210928084221934" style="zoom: 67%;" />
+  <img src="../image/image-20210928084221934.png" alt="image-20210928084221934" style="zoom: 67%;" />
 
   编程模型：
 
@@ -29,7 +29,7 @@
 
   服务器一个线程可以处理多个请求，客户端发送的连接请求都会注册到多路复用器上，多路复用器轮训到连接IO进行处理
 
-  <img src="C:\Users\lee\AppData\Roaming\Typora\typora-user-images\image-20210928084647410.png" alt="image-20210928084647410" style="zoom: 67%;" />
+  <img src="..\image\image-20210928084647410.png" alt="image-20210928084647410" style="zoom: 67%;" />
 
    
 
