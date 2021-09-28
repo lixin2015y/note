@@ -415,7 +415,17 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
 第三步，向注册中心注册服务
 
+```java
+public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean, ApplicationContextAware, InitializingBean, DisposableBean {
+	// ReferenceBean 实现了FactoryBean接口，创建bean对象的时候会调用Object getObject()
+    
+}
 
+// 创建代理对象
+ref = createProxy(map);
+
+
+```
 
 
 
