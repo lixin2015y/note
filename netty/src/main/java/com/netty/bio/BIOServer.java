@@ -9,13 +9,12 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class BIOServer {
     public static void main(String[] args) throws IOException {
-        // 创建线程池
-        ExecutorService executorService = Executors.newCachedThreadPool();
+
+        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(5, 10, 1000000, TimeUnit.SECONDS, new LinkedBlockingDeque<>());
 
         //
         ServerSocket serverSocket = new ServerSocket(6666);
@@ -24,10 +23,11 @@ public class BIOServer {
         while (true) {
             // 等待链接
             System.out.println("等待链接。。。。。。");
-            Socket socket = serverSocket.accept(); // 此处会进行阻塞
+            // 此处会进行阻塞
+            Socket socket = serverSocket.accept();
             System.out.println("链接到一个客户端");
 
-            executorService.execute(() -> {
+            threadPoolExecutor.execute(() -> {
                 // 和客户端进行通信
                 try {
                     handler(socket);
