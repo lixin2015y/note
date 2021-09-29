@@ -67,6 +67,7 @@ public class GroupChatServer {
      */
     public void readClientMessage(SelectionKey key) throws IOException {
         SocketChannel channel = (SocketChannel)key.channel();
+        channel.configureBlocking(false);
         try {
             // 创建缓冲
             ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
@@ -78,12 +79,15 @@ public class GroupChatServer {
                 sendMessageToOther(msg, channel);
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            // 取消注册
-            key.cancel();
-            // 关闭通道
-            channel.close();
-            System.out.println(channel.getRemoteAddress() + "离线了");
+            try {
+                System.out.println(channel.getRemoteAddress() + "离线了");
+                // 取消注册
+                key.cancel();
+                // 关闭通道
+                channel.close();
+            } catch (IOException e2) {
+                e2.printStackTrace();
+            }
         }
     }
 
