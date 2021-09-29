@@ -472,5 +472,198 @@ public static void main(String[] args) throws IOException {
 
 ##### 1.4.3.2 服务器端接收客户端消息，并实现转发，处理上线下线操作
 
+```java
+public class GroupChatServer {
+    private Selector selector;
+    private ServerSocketChannel listenChannel;
+    private static final int PORT = 6667;
+
+    /**
+     * 初始化工作
+     */
+    public GroupChatServer() throws IOException {
+        this.selector = Selector.open();
+        this.listenChannel = ServerSocketChannel.open();
+        // 绑定端口
+        listenChannel.socket().bind(new InetSocketAddress(PORT));
+        listenChannel.configureBlocking(false);
+        // 注册
+        listenChannel.register(selector, SelectionKey.OP_ACCEPT);
+    }
+
+    public void listen() {
+        try {
+            // 循环监听
+            while (true) {
+                int selectedCount = selector.select(2000);
+                if (selectedCount > 0) {
+                    // 有事件，进行处理
+                    Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+                    while (iterator.hasNext()) {
+                        SelectionKey selectionKey = iterator.next();
+                        // 监听不同事件
+                        if (selectionKey.isAcceptable()) {
+                            // 链接事件
+                            SocketChannel accept = listenChannel.accept();
+                            accept.configureBlocking(false);
+                            accept.register(selector, SelectionKey.OP_READ);
+                            System.out.println(accept.getRemoteAddress() + "上线了");
+                        }
+
+                        if (selectionKey.isReadable()) {
+                            // 读事件，通道可读,处理读
+                            readClientMessage(selectionKey);
+                        }
+                        // 删除key
+                        iterator.remove();
+                    }
+                } else {
+//                    System.out.println("无事件，等待中。。。。。。。。。。。。。。。");
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * 读取客户端消息
+     */
+    public void readClientMessage(SelectionKey key) throws IOException {
+        SocketChannel channel = (SocketChannel)key.channel();
+        channel.configureBlocking(false);
+        try {
+            // 创建缓冲
+            ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+            int read = channel.read(byteBuffer);
+            if (read > 0) {
+                String msg = new String(byteBuffer.array());
+                System.out.println("from 客户端:" + msg);
+                // 向其他客户端转发消息
+                sendMessageToOther(msg, channel);
+            }
+        } catch (IOException e) {
+            try {
+                System.out.println(channel.getRemoteAddress() + "离线了");
+                // 取消注册
+                key.cancel();
+                // 关闭通道
+                channel.close();
+            } catch (IOException e2) {
+                e2.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * 向其他通道发送消息，排除自己
+     * @param msg
+     * @param self
+     */
+    public void sendMessageToOther(String msg, SocketChannel self) throws IOException {
+        System.out.println("服务器转发消息中、。。。。。。。");
+        Set<SelectionKey> keys = selector.keys();
+        for (SelectionKey key : keys) {
+            Channel targetChannel = key.channel();
+            // 排除自己
+            if (targetChannel instanceof SocketChannel && targetChannel != self) {
+                SocketChannel dest = (SocketChannel) targetChannel;
+                ByteBuffer byteBuffer = ByteBuffer.wrap(msg.getBytes());
+                dest.write(byteBuffer);
+            }
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        GroupChatServer server = new GroupChatServer();
+        server.listen();
+
+    }
+}
+```
+
 ##### 1.4.3.3 编写客户端（链接服务器，发送消息）
 
+```java
+public class GroupChatClient {
+    private final String HOST = "127.0.0.1";
+    private final int PORT = 6667;
+    private Selector selector;
+    private SocketChannel socketChannel;
+    private String username;
+
+    public GroupChatClient() throws IOException {
+        this.selector = Selector.open();
+        // 链接服务器
+        socketChannel = SocketChannel.open(new InetSocketAddress(HOST, PORT));
+        socketChannel.configureBlocking(false);
+        // 注册到selector
+        socketChannel.register(selector, SelectionKey.OP_READ);
+        username = socketChannel.getLocalAddress().toString().substring(1);
+        System.out.println(username + "is ok..");
+
+    }
+
+    /**
+     * 向服务器端发送消息
+     * @param msg
+     */
+    public void sendInfo(String msg) {
+        msg = username + "说：" + msg;
+        try {
+            socketChannel.write(ByteBuffer.wrap(msg.getBytes()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void readInfo() {
+        try {
+            int read = selector.select();
+            if (read > 0) {
+                // 有事件发生的通道
+                Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+                while (iterator.hasNext()) {
+                    SelectionKey key = iterator.next();
+                    SocketChannel channel = (SocketChannel) key.channel();
+                    ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+                    channel.read(byteBuffer);
+                    System.out.println("读取到消息：" + new String(byteBuffer.array()).trim());
+                    iterator.remove();
+                }
+            } else {
+                System.out.println("没有可用通道");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) throws Exception{
+        // 启动客户端
+        GroupChatClient client = new GroupChatClient();
+
+        // 启动一个线程
+        new Thread(() -> {
+            while (true) {
+                client.readInfo();
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+        // 发送数据
+        Scanner scanner = new Scanner(System.in);
+        while (scanner.hasNextLine()) {
+            String s = scanner.nextLine();
+            client.sendInfo(s);
+        }
+    }
+
+}
+```
