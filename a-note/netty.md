@@ -342,7 +342,135 @@ selector可以检测多个注册的通道上是否有事件发生，通过事件
 
 避免了多线程上下文切换的额外开销
 
-##### 1.4.2.2 
+##### 1.4.2.2 Selector的基本方法
+
+selectort通过select方法(返回一个selectionkey的一个集合)监听到不同通道的事件，获取到selectionKey，通过selectionKey可有获取到channel并且区分是什么事件accept、write、read
 
 
+
+```java
+// select方法监听后，会将sectionKey加入到内部集合
+// 没有事件立即返回
+public abstract int selectNow() throws IOException;
+// selector线程当前线程会阻塞，超时后不阻塞
+public abstract int select(long timeout)
+// 阻塞到监听到事件为止，至少有一个事件发生才会返回
+public abstract int select() throws IOException;
+
+// 从内部集合中得到所有selectionkey
+public abstract Set<SelectionKey> selectedKeys();
+```
+
+
+
+##### 1.4.2.3 NIO模型注册过程
+
++ 客户端进行连接，调用SeverSocketChannel得到一个SocketChannel
++ SocketChannel可以调用register()方法注册到selector上，一个selector可以注册多个channel
++ 注册成功后返回一个sectionkey,selctor会保存与channel关联
++ selector调用select()获取到有事件发生的selectionkey集合，
++ 通过sectionkey可以获取channel进行业务处理
+
+<img src="image/image-20210929203627484.png" alt="image-20210929203627484" style="zoom:80%;" />
+
+```java
+public class NIOServer {
+    public static void main(String[] args) throws IOException {
+        // 创见
+        ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+
+        // 创建一个selector
+        Selector selector = Selector.open();
+
+        // 绑定端口6666，在服务器端监听
+        serverSocketChannel.socket().bind(new InetSocketAddress(6666));
+
+        // 设置为非阻塞
+        serverSocketChannel.configureBlocking(false);
+
+        // 本身的ServerSocketChannel也要注册到Selector上去,关心事件为创建连接
+        serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+
+        // 循环等待客户端连接
+        while (true) {
+            if (selector.select(1000) == 0) {
+                System.out.println("服务器等待一秒钟，无连接");
+                continue;
+            }
+
+            // 如果返回的数据>0，获取到有事件发生的selectionKey集合（关注事件）
+            Set<SelectionKey> selectionKeys = selector.selectedKeys();
+            // 通过selectionKeys获取通道
+            Iterator<SelectionKey> iterator = selectionKeys.iterator();
+            while (iterator.hasNext()) {
+                // 获取一个selectionKey
+                SelectionKey selectionKey = iterator.next();
+                // 根据key对应的通道发生的事件，
+                if (selectionKey.isAcceptable()) {
+                    // 此处accept方法并不会阻塞，因为已经知道他是acceptable了
+                    SocketChannel accept = serverSocketChannel.accept();
+                    // 设置为非阻塞
+                    accept.configureBlocking(false);
+                    System.out.println("客户端连接成功，生成了一个SocketChannel" + accept.hashCode());
+
+                    // 将通道注册到selector上，并绑定一个Buffer
+                    ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+                    accept.register(selector, SelectionKey.OP_READ, byteBuffer);
+                }
+
+                if (selectionKey.isReadable()) {
+                    // 读事件
+                    SocketChannel channel = (SocketChannel)selectionKey.channel();
+                    // 通过selectorKey获取到Buffer
+                    ByteBuffer buffer = (ByteBuffer)selectionKey.attachment();
+                    channel.read(buffer);
+                    System.out.println("from 客户端" + new String(buffer.array()));
+
+                }
+
+                // 手动删除当前sectionKey
+                iterator.remove();
+            }
+
+        }
+
+    }
+}
+```
+
+```java
+public static void main(String[] args) throws IOException {
+    // 得到一个网络通道
+    SocketChannel socketChannel = SocketChannel.open();
+    // 设置非阻塞
+    socketChannel.configureBlocking(false);
+
+    // 设置服务端IP端口
+    InetSocketAddress inetSocketAddress = new InetSocketAddress("127.0.0.1", 6666);
+
+    // 链接服务器
+    if (!socketChannel.connect(inetSocketAddress)) {
+        while (!socketChannel.finishConnect()) {
+            System.out.println("链接需要时间，客户端非阻塞，可以做其他工作");
+        }
+    }
+
+    // 如果成功链接，发送数据
+    String str = "hello 尚硅谷····";
+    ByteBuffer byteBuffer = ByteBuffer.wrap(str.getBytes());
+    // 发送数据
+    socketChannel.read(byteBuffer);
+    System.in.read();
+}
+```
+
+#### 1.4.3 使用NIO做一个聊天室
+
+ <img src="image/image-20210929212936797.png" alt="image-20210929212936797" style="zoom:80%;" />
+
+##### 1.4.3.1 服务端启动并绑定端口
+
+##### 1.4.3.2 服务器端接收客户端消息，并实现转发，处理上线下线操作
+
+##### 1.4.3.3 编写客户端（链接服务器，发送消息）
 
