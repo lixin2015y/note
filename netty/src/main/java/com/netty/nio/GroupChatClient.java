@@ -1,16 +1,13 @@
 package com.netty.nio;
 
-import javax.sound.midi.Soundbank;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 public class GroupChatClient {
     private final String HOST = "127.0.0.1";
