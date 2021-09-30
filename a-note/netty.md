@@ -344,7 +344,7 @@ selector可以检测多个注册的通道上是否有事件发生，通过事件
 
 ##### 1.4.2.2 Selector的基本方法
 
-selectort通过select方法(返回一个selectionkey的一个集合)监听到不同通道的事件，获取到selectionKey，通过selectionKey可有获取到channel并且区分是什么事件accept、write、read
+selector通过select方法(返回一个selectionkey的一个集合)监听到不同通道的事件，获取到selectionKey，通过selectionKey可有获取到channel并且区分是什么事件accept、write、read
 
 
 
@@ -371,7 +371,7 @@ public abstract Set<SelectionKey> selectedKeys();
 + selector调用select()获取到有事件发生的selectionkey集合，
 + 通过sectionkey可以获取channel进行业务处理
 
-<img src="image/image-20210929203627484.png" alt="image-20210929203627484" style="zoom:80%;" />
+<img src="../image/image-20210929203627484.png" alt="image-20210929203627484" style="zoom:80%;" />
 
 ```java
 public class NIOServer {
@@ -667,3 +667,16 @@ public class GroupChatClient {
 
 }
 ```
+
+#### 1.4.4 NIO和零拷贝
+
+##### 1.4.4.1 拷贝方法
+
++ DMA  拷贝指不通过CPU，直接内存拷贝
++ MMAP   适合小数据量读写 ，切换四次上下文 3次数据拷贝，
++ sendFile   适合大数据量  3次上下文切换，2次拷贝， sendFile可以通过DMA技术直接将内核缓冲中的数据写入到Socket中，mmap则不能，mmap必须将内核缓冲数据拷贝到网络缓冲
+
+零拷贝是从操作系统角度看，没有CPU拷贝（在内存中的拷贝）
+
+##### 1.4.4.2 NIO零拷贝案例
+
