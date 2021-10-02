@@ -680,3 +680,45 @@ public class GroupChatClient {
 
 ##### 1.4.4.2 NIO零拷贝案例
 
+```java
+public void test2() throws IOException {
+    SocketChannel socketChannel = SocketChannel.open();
+    socketChannel.connect(new InetSocketAddress("localhost", 7001));
+    final String fileName = "1.txt";
+    // 得到文件channel
+    FileInputStream fileInputStream = new FileInputStream(fileName);
+    FileChannel fileInputStreamChannel = fileInputStream.getChannel();
+
+    long startTime = System.currentTimeMillis();
+    long transferCount = fileInputStreamChannel.transferTo(0, fileInputStreamChannel.size(), socketChannel);
+    long endTime = System.currentTimeMillis();
+
+    System.out.println("发送总字节数" + transferCount + "耗时：" + (endTime - startTime) + "毫秒");
+
+}
+```
+
+#### 1.4.5 Reactor模式和Preactor模式
+
++ Reactor模式，主动模式，应用程序不断轮训，询问操作系统网络框架IO是否就绪，例如javaNIO
++ Preactor模式，被动模式，应用程序把read和write函数操作交给操作系统，操作系统完成后回调之前的程序，例如asio库
+
+
+
+
+
+### 二、netty框架
+
+#### 2.1 netty 框架
+
+#### 2.1.1 netty简介
+
+##### 2.1.1.1 为什么有了NIO还有有netty
+
++ NIO的类库十分复杂，使用麻烦，需要掌握Reactor、channel、buffer之间关系
++ 需要具备多线程编程和网络编程基础
++ 开发难度工作量大
++ NIO存在bug，selector导致cpu空轮训
+
+
+
