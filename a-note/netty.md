@@ -720,5 +720,54 @@ public void test2() throws IOException {
 + 开发难度工作量大
 + NIO存在bug，selector导致cpu空轮训
 
+#### 2.1.2 netty的线程模型
+
+目前主要的线程模型有
+
++ 传统IO服务模型
++ 根据Reactor线程数量和处理资源线程池数量分为3种模型
+  + 单Reactor单线程
+  + 单Reactor多线程
+  + 主从Reactor多线程
+
+netty是基于主从Reactor多线程实现的
+
+##### 2.1.2.1 传统IO模型
+
+<img src="D:\project\note\image\netty\image-20211002110746468.png" alt="image-20211002110746468" style="zoom:80%;" />
+
++ 采用阻塞IO模式获取输入的数据
++ 每个连接都需要独立的线程完成数据的输入，业务处理，数据的返回
+
+问题：创建大量线程，浪费资源，
 
 
+
+##### 2.1.2.2 Reactor模式
+
++ 利用IO复用模型，多个连接共用一个阻塞对象，应用程序只需要在一个阻塞对象等待，无需阻塞等待所有连接，当摸个连接有新的数据可以处理的时候，操作系统通知应用程序，开始处理业务
++ 一个线程可以处理多个连接
+
+<img src="D:\project\note\image\netty\image-20211002112305401.png" alt="image-20211002112305401" style="zoom:80%;" />
+
+![image-20211002113629304](D:\project\note\image\netty\image-20211002113629304.png)
+
+单Reactor问题
+
++ 单线程，处理时间和转发、还有读写都是一个线程，
+
+<img src="D:\project\note\image\netty\image-20211002114340215.png" alt="image-20211002114340215" style="zoom:80%;" />
+
+
+
+
+
+
+
+
+
+
+
+![image-20211002115217804](D:\project\note\image\netty\image-20211002115217804.png)
+
+![image-20211002122921945](D:\project\note\image\netty\image-20211002122921945.png)
