@@ -175,13 +175,13 @@ public class UserServiceStub implements UserService {
 
 + BIO(Blocking IO)阻塞式IO
 
-  <img src="image/image-20210921204351674.png" alt="image-20210921204351674" style="zoom:80%;" />
+  <img src="../image/image-20210921204351674.png" alt="image-20210921204351674" style="zoom:80%;" />
 
 
 
 + NIO(NOT Blocking IO) 非阻塞式IO
 
-<img src="image/image-20210921204523966.png" alt="image-20210921204523966" style="zoom:80%;" />
+<img src="../image/image-20210921204523966.png" alt="image-20210921204523966" style="zoom:80%;" />
 
 
 
@@ -287,7 +287,7 @@ public class UserServiceStub implements UserService {
 
 前提：dubbo加载配置文件将配置文件解析封装成对应的xxxConfig对象
 
-<img src="image/image-20210921213519127.png" alt="image-20210921213519127" style="zoom:80%;" />
+<img src="../image/image-20210921213519127.png" alt="image-20210921213519127" style="zoom:80%;" />
 
 将service标签解析成ServiceBean对象，将reference标签解析成ReferenceBean对象
 
