@@ -12,6 +12,7 @@
         <module>dubbo</module>
         <module>api</module>
         <module>netty</module>
+        <module>spring-elasticsearch</module>
     </modules>
 
     <properties>

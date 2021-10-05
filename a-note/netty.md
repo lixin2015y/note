@@ -757,3 +757,5 @@ public void test2() throws IOException {
 
 #### 2.1.3 netty的线程模型
 
+##### ![image-20211002230454049](../image/image-20211002230454049.png)
+
